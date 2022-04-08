@@ -183,4 +183,18 @@ taos> select * from cryptocurrency.btc_usd_cb;
 
 Grafana is an excellent tool for data visualization, and it comes in extremely handy If you're doing any algorithmic trading. The variety of integrations with other services enables you to quickly set up monitoring and alerts for conditions like irregular prices or flow and risk limits.
 
-there are install options covered in the [TDengine Grafana guide](https://www.taosdata.com/docs/cn/v2.0/connections#grafana).
+Before use grafana, you should install TDengine plugins, follow the steps covered in [TDengine Grafana guide](https://www.taosdata.com/docs/cn/v2.0/connections#grafana).
+
+# Calculating indicative bid offers
+
+Let's craft a query in Grafana that will allow us to plot the metrics we're interested in. Start off by creating a new dashboard and click on new panel. You can follow [create dashboard in TDengine](https://www.taosdata.com/docs/cn/v2.0/connections#dashboard)
+
+Paste the following query to create a time series of the bid-offer and spot price:
+
+```
+select avg(sell) as sell, avg(buy) as buy, avg(spot) from cryptocurrency.coinbase where ts > '2022-04-02 14:10:00' and ts < '2022-4-31 18:40:00' and fromCCY='BTC' and toCCY='USD' and exch='CB' interval(10s);
+```
+
+At this point, we have a dashboard with ticking prices. We can start experimenting with other parameters such as the colors or the sample frequency for each of the series. The Grafana UI can be used to change the chart range and resolution:
+
+![](./btc_usd.png)
