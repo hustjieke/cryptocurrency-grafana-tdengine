@@ -87,23 +87,48 @@ It requires an authorization token which you should obtain from your Coinbase ac
 ```
 from coinbase.wallet.client import Client
 from time import sleep
+import taos
 
+# Set coinbase params
 currency_code = 'USD'  # can also use EUR, CAD, etc.
+FromCCY = "BTC"
+ToCCY = "USD"
+exch = "CB"
+
+# Get TDengine connection
+db = "cryptocurrency"
+try:
+    conn = taos.connect(host='45.120.216.240', user='root', password='taosdata', database=db)
+except Exception as e:
+    print(e)
 
 if __name__ == '__main__':
     try:
         while 1==1:
-            client = Client("KcxisxqmWRVgtwsj", "isOLGBLaEkCy3ROQMvmjonGmXK0KRmUS", api_version='2022-03-22')
-            # Make the request
-            spot_price = client.get_spot_price(currency=currency_code)
-            buy_price = client.get_buy_price(currency=currency_code)
-            sell_price = client.get_sell_price(currency=currency_code)
-            time = client.get_time(api_version='2022-03-22')
+            # Make the request and get data
+            client = Client("your-api-key", "your-key-secret", api_version='2022-03-22')
 
-            print ('Current spot bitcoin price in %s: %s' % (currency_code, spot_price.amount))
-            print ('Current buy bitcoin price in %s: %s' % (currency_code, buy_price.amount))
-            print ('Current sell bitcoin price in %s: %s' % (currency_code, sell_price.amount))
-            print ('time: %s' %time.iso)
+            time = client.get_time(api_version='2022-03-22').iso
+            spot_price = float(client.get_spot_price(currency=currency_code).amount)
+            buy_price = float(client.get_buy_price(currency=currency_code).amount)
+            sell_price = float(client.get_sell_price(currency=currency_code).amount)
+
+            sql = "INSERT INTO %s.%s_%s_%s USING coinbase TAGS('%s', '%s', '%s') VALUES ('%s', %f, %f, %f)" % (db,
+                                                                                      FromCCY,
+                                                                                      ToCCY,
+                                                                                      exch,
+                                                                                      FromCCY,
+                                                                                      ToCCY,
+                                                                                      exch,
+                                                                                      time,
+                                                                                      spot_price,
+                                                                                      buy_price,
+                                                                                      sell_price)
+
+            print(sql)
+            conn.cursor().execute(sql)
+
+            # loop, sleep 2 seconds
             sleep(2)
 
     except Exception as e:
@@ -132,19 +157,24 @@ Example response:
 Now, let’s retrieve the price data using python:
 
 ```
-$ python coinbase-price.py
-Current spot bitcoin price in USD: 43450.81
-Current buy bitcoin price in USD: 43673.85
-Current sell bitcoin price in USD: 43235.08
-time: 2022-04-07T07:57:17Z
-Current spot bitcoin price in USD: 43450.81
-Current buy bitcoin price in USD: 43673.85
-Current sell bitcoin price in USD: 43235.08
-time: 2022-04-07T07:57:19Z
-Current spot bitcoin price in USD: 43450.81
-Current buy bitcoin price in USD: 43673.85
-Current sell bitcoin price in USD: 43235.08
-time: 2022-04-07T07:57:22Z
+$python coinbase-price.py
+INSERT INTO cryptocurrency.BTC_USD_CB USING coinbase TAGS('BTC', 'USD', 'CB') VALUES ('2022-04-08T02:42:46Z', 43643.710000, 43882.020000, 43438.410000)
+INSERT INTO cryptocurrency.BTC_USD_CB USING coinbase TAGS('BTC', 'USD', 'CB') VALUES ('2022-04-08T02:42:49Z', 43671.060000, 43882.020000, 43438.410000)
+INSERT INTO cryptocurrency.BTC_USD_CB USING coinbase TAGS('BTC', 'USD', 'CB') VALUES ('2022-04-08T02:42:52Z', 43671.060000, 43882.020000, 43438.410000)
+...
+...
+```
+
+Use taos shell connect to TDengine, execute select.
+
+```
+taos> select * from cryptocurrency.btc_usd_cb;
+           ts            |         spot         |         sell         |         buy          |
+===============================================================================================
+2022-04-08 10:30:18.000 |          43614.17188 |          43842.78125 |          43388.55078 |
+2022-04-08 10:30:21.000 |          43610.01953 |          43842.78125 |          43388.55078 |
+2022-04-08 10:30:23.000 |          43610.01953 |          43842.78125 |          43388.55078 |
+2022-04-08 10:31:32.000 |          43610.53125 |          43816.14062 |          43372.69141 |
 ...
 ...
 ```
