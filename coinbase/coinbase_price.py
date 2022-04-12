@@ -10,9 +10,9 @@ Platform = "PLATFORM"
 
 # Get TDengine connection
 DB = "cryptocurrency"
-HOST = "your-host"
-USER = 'root'
-PASS = 'taosdata'
+HOST = "127.0.0.1"
+USER = "root"
+PASS = "taosdata"
 
 # SET coinbase api key-secret and api version
 KEY = "your-api-key"
@@ -25,7 +25,7 @@ except Exception as e:
     print(e)
 
 if __name__ == '__main__':
-    try:    
+    try:
         while 1==1:
             # Make the request 
             client = Client(KEY, KEY_SECRET, api_version=API_VERSION)
@@ -50,7 +50,7 @@ if __name__ == '__main__':
             print(sql)
             conn.cursor().execute(sql)
 
-            # loop, sleep 2 seconds 
+            # loop, sleep 2 seconds
             sleep(2)
 
     except Exception as e:
