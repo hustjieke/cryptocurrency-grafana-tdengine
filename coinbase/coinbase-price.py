@@ -6,12 +6,21 @@ import taos
 currency_code = 'USD'  # can also use EUR, CAD, etc.
 FromCCY = "BTC"
 ToCCY = "USD"
-exch = "CB"
+Platform = "PLATFORM"
 
 # Get TDengine connection
-db = "cryptocurrency"
+DB = "cryptocurrency"
+HOST = "your-host"
+USER = 'root'
+PASS = 'taosdata'
+
+# SET coinbase api key-secret and api version
+KEY = "your-api-key"
+KEY_SECRET = "your-key-secret"
+API_VERSION = "2022-03-28"
+
 try:
-    conn = taos.connect(host='45.120.216.240', user='root', password='taosdata', database=db)
+    conn = taos.connect(host=HOST, user=USER, password=PASS, database=DB)
 except Exception as e:
     print(e)
 
@@ -19,20 +28,20 @@ if __name__ == '__main__':
     try:    
         while 1==1:
             # Make the request 
-            client = Client("your-api-key", "your-key-secret", api_version='2022-03-22')
+            client = Client(KEY, KEY_SECRET, api_version=API_VERSION)
 
-            time = client.get_time(api_version='2022-03-22').iso
+            time = client.get_time(api_version=API_VERSION).iso
             spot_price = float(client.get_spot_price(currency=currency_code).amount)
             buy_price = float(client.get_buy_price(currency=currency_code).amount)
             sell_price = float(client.get_sell_price(currency=currency_code).amount)
 
-            sql = "INSERT INTO %s.%s_%s_%s USING coinbase TAGS('%s', '%s', '%s') VALUES ('%s', %f, %f, %f)" % (db,
+            sql = "INSERT INTO %s.%s_%s_%s USING coinbase TAGS('%s', '%s', '%s') VALUES ('%s', %f, %f, %f)" % (DB,
                                                                                       FromCCY,
                                                                                       ToCCY,  
-                                                                                      exch,   
+                                                                                      Platform,
                                                                                       FromCCY,
                                                                                       ToCCY,  
-                                                                                      exch,   
+                                                                                      Platform,
                                                                                       time,   
                                                                                       spot_price,
                                                                                       buy_price,
