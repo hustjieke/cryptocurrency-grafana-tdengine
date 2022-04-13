@@ -1,4 +1,4 @@
-Table of Contents
+目录
 =================
 
    * [加密货币](#加密货币)
@@ -40,7 +40,7 @@ easy_install coinbase
 
 4.  安装  2.4 之后版本的 TDengine，您可以通过 [apt-get](https://www.taosdata.com/docs/cn/v2.0/getting-started#apt-get) 、[源码](https://www.taosdata.com/docs/cn/v2.0/getting-started#-4) 或 [安装包](https://www.taosdata.com/docs/cn/v2.0/getting-started#-2) 快速安装。
 
-安装完成之后[启动](https://www.taosdata.com/docs/cn/v2.0/getting-started#-5) taosd 和 taosadapter (对应 6041 端口，后续连接时会使用到)
+安装完成之后[启动taosd 和 taosadapter](https://www.taosdata.com/docs/cn/v2.0/getting-started#-5)
 
 ```
 systemctl start taosd
@@ -58,13 +58,13 @@ systemctl status taosadapter
 
 # 库 / 表 shema 设计
 
-* database 创建，这里我们创建一个名为 `cryptocurrency` 的数据库
+* [创建database](https://www.taosdata.com/docs/cn/v2.0/taos-sql#management)，这里我们创建一个名为 `cryptocurrency` 的数据库
 
 ```
 CREATE DATABASE cryptocurrency;
 ```
 
-* 超级表设计
+* [超级表设计](https://www.taosdata.com/docs/cn/v2.0/taos-sql#super-table)
 
 我们使用三个列字段作为 TAG: `FromCCY`（货币源）、`ToCCY`（目标货币）、`Platform`（交易平台）
 其它四个字段为：`ts`（时间戳）、`spot`（当前价格）、`sell` （售价）、`buy`（买入价）
@@ -77,7 +77,7 @@ CREATE STABLE coinbase(ts timestamp, spot float, sell float, buy float) tags(Fro
 
 我们在 Insert 数据时直接[基于超级表创建](https://www.taosdata.com/docs/cn/v2.0/taos-sql#-3)：
 ```
-INSERT INTO cryptocurrency.BTC_USD_PLATFORM USING coinbase TAGS('BTC', 'USD', 'CB') VALUES ('2022-04-07T10:48:50Z', 1.100000, 1.100000, 1.100000);
+INSERT INTO cryptocurrency.BTC_USD_coinbase USING coinbase TAGS('BTC', 'USD', 'CB') VALUES ('2022-04-07T10:48:50Z', 1.100000, 1.100000, 1.100000);
 ```
 
 # 从 Coinbase 获取数据
@@ -98,7 +98,7 @@ import taos
 currency_code = 'USD'  # can also use EUR, CAD, etc.
 FromCCY = "BTC"
 ToCCY = "USD"
-Platform = "PLATFORM"
+Platform = "coinbase"
 
 # Get TDengine connection
 DB = "cryptocurrency"
@@ -153,9 +153,9 @@ if __name__ == '__main__':
 
 ```
 $python coinbase-price.py
-INSERT INTO cryptocurrency.BTC_USD_PLATFORM USING coinbase TAGS('BTC', 'USD', 'PLATFORM') VALUES ('2022-04-08T02:42:46Z', 43643.710000, 43882.020000, 43438.410000)
-INSERT INTO cryptocurrency.BTC_USD_PLATFORM USING coinbase TAGS('BTC', 'USD', 'PLATFORM') VALUES ('2022-04-08T02:42:49Z', 43671.060000, 43882.020000, 43438.410000)
-INSERT INTO cryptocurrency.BTC_USD_PLATFORM USING coinbase TAGS('BTC', 'USD', 'PLATFORM') VALUES ('2022-04-08T02:42:52Z', 43671.060000, 43882.020000, 43438.410000)
+INSERT INTO cryptocurrency.BTC_USD_coinbase USING coinbase TAGS('BTC', 'USD', 'coinbase') VALUES ('2022-04-08T02:42:46Z', 43643.710000, 43882.020000, 43438.410000)
+INSERT INTO cryptocurrency.BTC_USD_coinbase USING coinbase TAGS('BTC', 'USD', 'coinbase') VALUES ('2022-04-08T02:42:49Z', 43671.060000, 43882.020000, 43438.410000)
+INSERT INTO cryptocurrency.BTC_USD_coinbase USING coinbase TAGS('BTC', 'USD', 'coinbase') VALUES ('2022-04-08T02:42:52Z', 43671.060000, 43882.020000, 43438.410000)
 ...
 ...
 ```
@@ -182,9 +182,9 @@ taos> select * from cryptocurrency.btc_usd_platform;
 * Input SQL 设计，参见上一步  [创建和使用 dashboard](https://www.taosdata.com/docs/cn/v2.0/connections#dashboard)  说明部分，这里我们给出一个示例，具体参数可替换为TDengine 插件的内置变量:
 
 ```
-select avg(sell) as sell, avg(buy) as buy, avg(spot) from cryptocurrency.coinbase where ts > '2022-04-02 14:10:00' and ts < '2022-4-31 18:40:00' and fromCCY='BTC' and toCCY='USD' and platform='PLATFORM' interval(10s);
+select avg(sell) as sell, avg(buy) as buy, avg(spot) from cryptocurrency.coinbase where ts > '2022-04-02 14:10:00' and ts < '2022-4-31 18:40:00' and fromCCY='BTC' and toCCY='USD' and platform='coinbase' interval(10s);
 ```
 
 导入 SQL，在 dashboard 展示实时价格数和买卖价格数据：
 
-![](./btc_usd.png)
+![](../images/coinbase_btcusd.png)

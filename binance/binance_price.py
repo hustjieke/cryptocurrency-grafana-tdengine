@@ -40,15 +40,16 @@ if __name__ == '__main__':
                 sym = ticker_price[idx]['symbol']
                 table = DB + "." + PLATFORM + "_" + sym
                 sql = "INSERT INTO %s USING binance TAGS('%s', '%s') VALUES (%s, %f, %f, %f, %f, %f)" % (table,
-                                                                                                     sym,
-                                                                                                     PLATFORM,
-                                                                                                     serverTime,
-                                                                                                     float(ticker_price[idx]['price']),
-                                                                                                     float(best_order_book_price[idx]['bidPrice']),
-                                                                                                     float(best_order_book_price[idx]['bidQty']),
-                                                                                                     float(best_order_book_price[idx]['askPrice']),
-                                                                                                     float(best_order_book_price[idx]['askQty']))
+                                                                            sym,
+                                                                            PLATFORM,
+                                                                            serverTime,
+                                                                            float(ticker_price[idx]['price']),
+                                                                            float(best_order_book_price[idx]['bidPrice']),
+                                                                            float(best_order_book_price[idx]['bidQty']),
+                                                                            float(best_order_book_price[idx]['askPrice']),
+                                                                            float(best_order_book_price[idx]['askQty']))
                 conn.cursor().execute(sql)
-                sleep(1)
+
+            sleep(1)
     except Exception as e:
         print(e)

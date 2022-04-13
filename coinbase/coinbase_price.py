@@ -6,7 +6,7 @@ import taos
 currency_code = 'USD'  # can also use EUR, CAD, etc.
 FromCCY = "BTC"
 ToCCY = "USD"
-Platform = "PLATFORM"
+Platform = "coinbase"
 
 # Get TDengine connection
 DB = "cryptocurrency"
