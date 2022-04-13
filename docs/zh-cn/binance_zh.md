@@ -1,33 +1,26 @@
-Table of Contents
+目录
 =================
 
-   * [加密货币](#加密货币)
-   * [引入 binance 和 TDengine](#引入-binance-和-tdengine)
-   * [环境准备(Linux)](#环境准备linux)
-   * [库 / 表 shema 设计](#库--表-shema-设计)
+   * [环境准备](#环境准备)
+   * [数据库、表设计](#数据库表设计)
    * [访问 binance 数据](#访问-binance-数据)
    * [借助 grafana 面板展示实时价格数据走势](#借助-grafana-面板展示实时价格数据走势)
    * [未来](#未来)
 
-# 加密货币
-* 背景介绍
-* 趋势预测
-* 借助的工具，分析
+[Binance 中文官网](https://www.binancezh.top/zh-CN)
 
-# 引入 binance 和 TDengine
+# 环境准备
 
-*  [binance](https://www.binancezh.top/zh-CN)
-*  [TDengine](https://www.taosdata.com)
+以下所有的操作均默认在 Linux 系统下进行。
 
-# 环境准备(Linux)
-
-1.  确认是否安装 pip，如未安装，执行
+1. 确认是否安装 pip，如未安装，执行
 
 ```
 python -m ensurepip
 ```
 
 2. 安装 python `requests` 库
+
 ```
 pip install requests
 
@@ -36,14 +29,15 @@ pip install requests
 easy_install requests
 ```
 
-3.  安装  2.4 之后版本的 TDengine，您可以通过 [apt-get](https://www.taosdata.com/docs/cn/v2.0/getting-started#apt-get) 、[源码](https://www.taosdata.com/docs/cn/v2.0/getting-started#-4) 或 [安装包](https://www.taosdata.com/docs/cn/v2.0/getting-started#-2) 快速安装。
+3. 安装 2.4 之后版本的 TDengine，您可以通过 [apt-get](https://www.taosdata.com/docs/cn/v2.0/getting-started#apt-get) 、[源码](https://www.taosdata.com/docs/cn/v2.0/getting-started#-4) 或 [安装包](https://www.taosdata.com/docs/cn/v2.0/getting-started#-2) 快速安装。
 
-安装完成之后[启动 taosd 和 taosadapter ](https://www.taosdata.com/docs/cn/v2.0/getting-started#-5) 
+安装完成之后 [启动 taosd 和 taosadapter ](https://www.taosdata.com/docs/cn/v2.0/getting-started#-5)。
 
 ```
 systemctl start taosd
 systemctl start taosadapter
 ```
+
 检查服务是否正常工作：
 
 ```
@@ -51,10 +45,9 @@ systemctl status taosd
 systemctl status taosadapter
 ```
 
-4.  安装 [TDengine python 连接器](https://www.taosdata.com/docs/cn/v2.0/connector#python)
+4. 安装 [TDengine python 连接器](https://www.taosdata.com/docs/cn/v2.0/connector#python)
 
-
-# 库 / 表 shema 设计
+# 数据库、表设计
 
 * [创建 database](https://www.taosdata.com/docs/cn/v2.0/taos-sql#management)，这里我们创建一个名为 `cryptocurrency` 的数据库
 
@@ -73,14 +66,15 @@ CREATE STABLE binance(ts timestamp, spot_price float, bid_price float, bid_qty f
 
 * 子表构建方式
 
-我们在 Insert 数据时直接[基于超级表自动创建](https://www.taosdata.com/docs/cn/v2.0/taos-sql#-3)：
+我们在 Insert 数据时直接 [基于超级表自动创建](https://www.taosdata.com/docs/cn/v2.0/taos-sql#-3)：
+
 ```
 INSERT INTO cryptocurrency.binance_BTCUSD USING binance TAGS('BTCUSD', 'binance') VALUES (1649831015777, 40099.180000, 40101.600000, 0.001813, 40110.260000, 0.004553)
 ```
 
 # 访问 binance 数据
 
-[官方 API 文档](https://docs.binance.us/#introduction) 如何访问相关数据，我们通过访问 url 获取[最新价格和最优挂单数据](https://docs.binance.us/?python#get-live-ticker-price)：
+[官方 API 文档](https://docs.binance.us/#introduction) 详细阐述了如何访问相关数据，以下将通过访问 url 获取 [最新价格和最优挂单数据](https://docs.binance.us/?python#get-live-ticker-price) 并写入到 TDengine：
 
 ```
 import requests
@@ -162,6 +156,7 @@ taos> show tables;
  binance_ltcbtc                 | 2022-04-12 20:07:15.597 |       6 | binance                        |      1407374967457254 |           5 |           5 |
 Query OK, 5 row(s) in set (0.002730s)
 ```
+
 查看表 binance_btcusd 数据：
 
 ```
@@ -178,10 +173,11 @@ Query OK, 10 row(s) in set (0.002806s)
 
 #  借助 grafana 面板展示实时价格数据走势
 
-* 安装grafana， 这里注意需要配置 TDengine 到数据源，详见[安装、配置 grafana 说明](https://www.taosdata.com/docs/cn/v2.0/connections#grafana) 
+* 安装 Grafana， 这里注意需要配置 TDengine 的数据源，详见 [安装、配置 Grafana 说明](https://www.taosdata.com/docs/cn/v2.0/connections#grafana) 
 
-* [创建和使用 dashboard](https://www.taosdata.com/docs/cn/v2.0/connections#dashboard) 
-* Input SQL 设计，参见上一步  [创建和使用 dashboard](https://www.taosdata.com/docs/cn/v2.0/connections#dashboard)  说明部分，这里我们给出一个示例，具体参数可替换为TDengine 插件的内置变量:
+* [创建和使用 Dashboard](https://www.taosdata.com/docs/cn/v2.0/connections#dashboard) 
+
+* Input SQL 设计，参见上一步  [创建和使用 Dashboard](https://www.taosdata.com/docs/cn/v2.0/connections#dashboard)  说明部分，这里我们给出一个示例，具体参数可替换为 TDengine 插件的内置变量:
 
 ```
 select avg(spot_price) as spot, avg(bid_price) as book_sell, avg(ask_price) as book_buy from cryptocurrency.binance where ts >= $from and ts < $to interval($interval)；
@@ -189,7 +185,7 @@ select avg(spot_price) as spot, avg(bid_price) as book_sell, avg(ask_price) as b
 
 from、to 和 interval 为 TDengine 插件的内置变量，表示从 Grafana 插件面板获取的查询范围和时间间隔。
 
-导入 SQL，在 dashboard 展示实时价格数和最高买单和最低卖单价格数据：
+导入 SQL，在 Dashboard 展示实时价格数和最高买单和最低卖单价格数据：
 
 ![](../images/binance_btcusd.jpeg)
 
@@ -199,4 +195,4 @@ from、to 和 interval 为 TDengine 插件的内置变量，表示从 Grafana �
 
 # 未来
 
-基于 [TDengine](https://www.taosdata.com) 和 grafana，我们可以在加密货币领域做很多事情。比如从各个加密货币平台访问实时数据写入到  TDengine，观察曲线波动情况，甚至可以借助一些工具来做数据分析和趋势预测。
+基于 [TDengine](https://www.taosdata.com) 和 Grafana，我们可以在加密货币领域做很多事情。比如从各个加密货币平台访问实时数据写入到 TDengine，观察曲线波动情况，甚至可以借助一些工具来做数据分析和趋势预测。
