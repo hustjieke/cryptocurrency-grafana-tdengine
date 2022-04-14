@@ -1,17 +1,16 @@
 目录
 =================
 
-   * [环境准备(Linux)](#环境准备linux)
+   * [环境准备](#环境准备)
    * [数据库库、表设计](#数据库库表设计)
    * [从 Coinbase 获取数据](#从-coinbase-获取数据)
    * [借助 Grafana 面板展示实时交易数据走势](#借助-grafana-面板展示实时交易数据走势)
-   * [未来](#未来)
 
-*  [Coinbase 官网](https://www.coinbase.com/)
+* [Coinbase 官网](https://www.coinbase.com)
 
-# 环境准备(Linux)
+# 环境准备
 
-以下所有的操作均默认在 Linux 系统下进行。
+以下所有操作均在 Linux 系统下进行。
 
 1. 创建 [Coinbase](https://www.coinbase.com/signup) 账号，并且启用 [API 密钥对](https://www.coinbase.com/signin)。该密钥对会在后面调用 [官方 Coinbase 库](https://developers.coinbase.com/docs/wallet/client-libraries) 时中使用到。
 
@@ -47,11 +46,12 @@ systemctl status taosd
 systemctl status taosadapter
 ```
 
-5.  安装 [TDengine Python 连接器](https://www.taosdata.com/docs/cn/v2.0/connector#python)
+5. 安装 [TDengine Python 连接器](https://www.taosdata.com/docs/cn/v2.0/connector#python)
 
 # 数据库库、表设计
 
-* [创建 database](https://www.taosdata.com/docs/cn/v2.0/taos-sql#management)，这里我们创建一个名为 `cryptocurrency` 的数据库
+* [创建 Database](https://www.taosdata.com/docs/cn/v2.0/taos-sql#management)：
+这里我们创建一个名为 `cryptocurrency` 的数据库
 
 ```
 CREATE DATABASE cryptocurrency;
@@ -59,14 +59,22 @@ CREATE DATABASE cryptocurrency;
 
 * [创建超级表](https://www.taosdata.com/docs/cn/v2.0/taos-sql#super-table)
 
-我们使用三个列字段作为 TAG: `FromCCY`（货币源）、`ToCCY`（目标货币）、`Platform`（交易平台）
-其它四个字段为：`ts`（时间戳）、`spot`（当前价格）、`sell` （售价）、`buy`（买入价）
+我们使用三个列字段作为 TAGs：
+`FromCCY`：货币源
+`ToCCY`：目标货币
+`Platform`：加密货币交易平台比如 `Coinbase`、`Binance` 等。
+
+表列字段为：
+`ts`：时间戳
+`spot`：当前价格
+`sell`：售价
+`buy`：买入价
 
 ```
 CREATE STABLE coinbase(ts timestamp, spot float, sell float, buy float) tags(FromCCY binary(10), ToCCY binary(10), Platform binary(10));
 ```
 
-* 子表构建方式
+* 子表构建
 
 我们在 Insert 数据时直接 [基于超级表创建](https://www.taosdata.com/docs/cn/v2.0/taos-sql#-3)：
 
@@ -77,7 +85,6 @@ INSERT INTO cryptocurrency.BTC_USD_coinbase USING coinbase TAGS('BTC', 'USD', 'C
 # 从 Coinbase 获取数据
 
 [官方文档示例代码](https://developers.coinbase.com/docs/wallet/guides/price-data) 给我们展示了如何获取并打印出实时交易的价格数据。我们基于 TDengine 做了以下扩展：
-
 
 * 从 Coinbase 获取当前时间戳（ts）、当前价格（spot）、买入价格（buy）、售价（sell）。
 * 通过 TDengine Python 连接器将 当前时间戳（ts）、当前价格（spot）、买入价格（buy）、售价（sell）数据写入 TDengine。
@@ -96,7 +103,7 @@ Platform = "coinbase"
 
 # Get TDengine connection
 DB = "cryptocurrency"
-HOST = "your-host"
+HOST = "127.0.0.1"
 USER = 'root'
 PASS = 'taosdata'
 
@@ -137,7 +144,7 @@ if __name__ == '__main__':
             conn.cursor().execute(sql)
 
             # loop, sleep 2 seconds 
-            sleep(2)
+            sleep(1)
 
     except Exception as e:
         print(e)
@@ -182,7 +189,3 @@ select avg(sell) as sell, avg(buy) as buy, avg(spot) from cryptocurrency.coinbas
 导入 SQL，在 Dashboard 展示实时价格数和买卖价格数据：
 
 ![](../images/coinbase_btcusd.png)
-
-# 未来
-
-基于 [TDengine](https://www.taosdata.com) 和 Grafana，我们可以在加密货币领域做很多事情。比如从各个加密货币平台访问实时数据写入到 TDengine，观察曲线波动情况，甚至可以借助一些工具来做数据分析和趋势预测。

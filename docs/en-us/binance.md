@@ -6,7 +6,7 @@ Table of Contents
    * [Fetch data from Binance](#fetch-data-from-binance)
    * [Building a dashboard based on Grafana](#building-a-dashboard-based-on-grafana)
 
-[Binance official site](https://www.binance.com/en)
+[Binance Official Website](https://www.binance.com/en)
 
 All the operations are performed under the Linux system.
 
@@ -60,8 +60,7 @@ Set two column fields as TAGS:
 `FromCCYto`: Convert the currency `From` to the corresponding value of the target currency `To`.
 `Platform`: Trade platform like `coinbase`, `binance`, etc.
 
-get the best price/qty on the order book for a token symbol or symbols.
-The fields of table column：
+The column fields of table:
 `ts`: timestamp
 `spot_price`: live price
 `bid_price`: the best bid(sell) price on the order book
@@ -73,9 +72,9 @@ The fields of table column：
 CREATE STABLE binance(ts timestamp, spot_price float, bid_price float, bid_qty float, ask_price float, ask_qty float) tags(FromCCYto binary(20), Platform binary(10));
 ```
 
-* Create sub table
+* Create Subtable
 
-Insert 数据时直接 [Auto create base on super table](https://tdengine.com/docs/en/v2.0/taos-sql#data-writing):
+Insert data by [Auto create based on super table](https://tdengine.com/docs/en/v2.0/taos-sql#data-writing):
 
 ```
 INSERT INTO cryptocurrency.binance_BTCUSD USING binance TAGS('BTCUSD', 'binance') VALUES (1649831015777, 40099.180000, 40101.600000, 0.001813, 40110.260000, 0.004553)
@@ -83,7 +82,7 @@ INSERT INTO cryptocurrency.binance_BTCUSD USING binance TAGS('BTCUSD', 'binance'
 
 # Fetch data from Binance
 
-[Binance API](https://docs.binance.us/#introduction) provides the method on how to access to [market trade and price data](https://docs.binance.us/?python#get-live-ticker-price). Next we'll make requests to get price data from provided endpoint and write to TDengine.
+[Binance API](https://docs.binance.us/#introduction) provides the method on how to access to [market trade and price data](https://docs.binance.us/?python#get-live-ticker-price). Later we'll make requests to get price data from provided endpoint and write to TDengine.
 
 ```
 import requests
