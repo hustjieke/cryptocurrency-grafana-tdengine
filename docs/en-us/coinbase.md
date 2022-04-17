@@ -10,7 +10,7 @@ Table of Contents
 
 # Prepare
 
-1. Create [Coinbase account](https://www.coinbase.com/signup) and ensure [API Key Pair](https://www.coinbase.com/signin), it will be used latter.
+1. Create [Coinbase account](https://www.coinbase.com/signup) and ensure [API Key Pair](https://www.coinbase.com/signin), it will be used later.
 
 2. Install pip
 
@@ -28,9 +28,9 @@ pip install coinbase
 easy_install coinbase
 ```
 
-4. Install TDengine (version >= 2.4) by [apt-get](https://tdengine.com/docs/en/v2.0/getting-started#install-tdengine-by-apt-g), [Source code](https://tdengine.com/docs/en/v2.0/getting-started#install-from-source) or [Package](https://tdengine.com/docs/en/v2.0/getting-started#install-from-package).
+4. Install TDengine (version >= 2.4) via [apt-get](https://tdengine.com/docs/en/v2.0/getting-started#install-tdengine-by-apt-g), [Source code](https://tdengine.com/docs/en/v2.0/getting-started#install-from-source) or [Package](https://tdengine.com/docs/en/v2.0/getting-started#install-from-package).
 
-After install success, [start taosd and taosadapter](https://tdengine.com/docs/en/v2.0/getting-started#quick-launch).
+After installing, [start taosd and taosadapter](https://tdengine.com/docs/en/v2.0/getting-started#quick-launch).
 
 ```
 systemctl start taosd
@@ -48,7 +48,7 @@ systemctl status taosadapter
 
 # Prepare Database and Table
 
-* [Create a database](https://tdengine.com/docs/en/v2.0/taos-sql#management), let's create a database named `cryptocurrency`:
+* [Create a database](https://tdengine.com/docs/en/v2.0/taos-sql#management) named `cryptocurrency`:
 
 ```
 CREATE DATABASE cryptocurrency;

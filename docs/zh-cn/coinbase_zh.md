@@ -2,11 +2,11 @@
 =================
 
    * [环境准备](#环境准备)
-   * [数据库库、表设计](#数据库库表设计)
-   * [从 Coinbase 获取数据](#从-coinbase-获取数据)
+   * [数据库、表设计](#数据库表设计)
+   * [访问 Coinbase 数据](#访问-coinbase-数据)
    * [借助 Grafana 面板展示实时交易数据走势](#借助-grafana-面板展示实时交易数据走势)
 
-* [Coinbase 官网](https://www.coinbase.com)
+[Coinbase 官网](https://www.coinbase.com)
 
 # 环境准备
 
@@ -48,7 +48,7 @@ systemctl status taosadapter
 
 5. 安装 [TDengine Python 连接器](https://www.taosdata.com/docs/cn/v2.0/connector#python)
 
-# 数据库库、表设计
+# 数据库、表设计
 
 * [创建 Database](https://www.taosdata.com/docs/cn/v2.0/taos-sql#management)：
 这里我们创建一个名为 `cryptocurrency` 的数据库
@@ -82,7 +82,7 @@ CREATE STABLE coinbase(ts timestamp, spot float, sell float, buy float) tags(Fro
 INSERT INTO cryptocurrency.BTC_USD_coinbase USING coinbase TAGS('BTC', 'USD', 'CB') VALUES ('2022-04-07T10:48:50Z', 1.100000, 1.100000, 1.100000);
 ```
 
-# 从 Coinbase 获取数据
+# 访问 Coinbase 数据
 
 [官方文档示例代码](https://developers.coinbase.com/docs/wallet/guides/price-data) 给我们展示了如何获取并打印出实时交易的价格数据。我们基于 TDengine 做了以下扩展：
 
